@@ -10,8 +10,8 @@ lockout_default_hotkey = ''
 --		More info: https://cookbook.fivem.net/2020/01/06/using-the-new-console-key-bindings/
 --		List of Keys: https://pastebin.com/u9ewvWWZ
 locked_press_count = 5    
---	Inital press count for reminder e.g. if this is 5 and reminder_rate is 10 then, after 5 key presses it will remind you the first time, after that every 10 key presses. 
-reminder_rate = 10
+--	Inital press count for reminder e.g. if this is 5 and lock_reminder_rate is 10 then, after 5 key presses it will remind you the first time, after that every 10 key presses. 
+lock_reminder_rate = 10
 --	How often, in luxart key presses, to remind you that your siren controller is locked.
 
 

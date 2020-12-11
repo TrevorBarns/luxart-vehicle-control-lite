@@ -37,11 +37,15 @@ tone_AUX_id = 2
 tone_main_mem_id = nil
 tone_main_reset_standby = true
 tone_airhorn_intrp = true
+park_kill = true
 
 airhorn_button_SFX = false
 manu_button_SFX = false
+activity_reminder_index = 1
 last_activity_timer = 0
+
 button_sfx_scheme = default_sfx_scheme_name
+button_sfx_scheme_id = 1
 on_volume = default_on_volume	
 off_volume = default_off_volume	
 upgrade_volume = default_upgrade_volume	
@@ -49,12 +53,11 @@ downgrade_volume = default_downgrade_volume
 hazards_volume = default_hazards_volume
 lock_volume = default_lock_volume
 lock_reminder_volume = default_lock_reminder_volume
-reminder_volume = default_reminder_volume
+activity_reminder_volume = default_reminder_volume
 
 last_veh = nil
 veh = nil
 player_is_emerg_driver = false
-park_kill = false
 curr_version =  GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
 repo_version = nil
 
@@ -65,7 +68,7 @@ local veh = nil
 local siren_string_lookup = { "SIRENS_AIRHORN", "VEHICLES_HORNS_SIREN_1", "VEHICLES_HORNS_SIREN_2", "VEHICLES_HORNS_POLICE_WARNING",
 							  "VEHICLES_HORNS_AMBULANCE_WARNING", "VEHICLES_HORNS_FIRETRUCK_WARNING"
 							}
-local activity_reminder_lookup = { [2] = 10000, [3] = 60000, [4] = 120000, [5] = 300000, [6] = 600000 } 
+local activity_reminder_lookup = { [2] = 30000, [3] = 60000, [4] = 120000, [5] = 300000, [6] = 600000 } 
 
 local count_bcast_timer = 0
 local delay_bcast_timer = 200
@@ -141,7 +144,7 @@ Citizen.CreateThread(function()
 	end
 end)
 
----------------------------------------------------------------------
+
 -- ParkKill Functionality
 Citizen.CreateThread(function()
 	while true do
@@ -162,17 +165,13 @@ Citizen.CreateThread(function()
 	end
 end)
 
-function executeReminder()
-end
-
----------------------------------------------------------------------
 -- Activity Reminder Functionality
 Citizen.CreateThread(function()
 	while true do
 		while activity_reminder_index > 1 and player_is_emerg_driver do
 			if IsVehicleSirenOn(veh) and state_lxsiren[veh] == 0 and state_pwrcall[veh] == 0 then
 				if last_activity_timer < 1 then
-					TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", reminder_volume) -- Upgrade
+					TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", activity_reminder_volume) -- Upgrade
 					SetActivityTimer()
 				end
 			end
@@ -181,6 +180,7 @@ Citizen.CreateThread(function()
 		Citizen.Wait(1000)
 	end
 end) 
+
 -- Activity Reminder Timer
 Citizen.CreateThread(function()
 	while true do
@@ -329,8 +329,34 @@ Citizen.CreateThread(function()
 end)
 
 
+------------------STORAGE MANAGEMENT-----------------
+--On Spawn Register Keys and Load Settings
+AddEventHandler( "playerSpawned", function()
+	TriggerServerEvent('lvc_GetVersion_s')
+	LoadSettings()
+end )
 
 --------------REGISTERED COMMANDS---------------
+--Deletes all saved KVPs for that vehicle profile
+RegisterCommand('lvcfactoryreset', function(source, args)
+	local choice = FrontEndAlert("Warning", "Are you sure you want to delete all saved LVC data and Factory Reset?")
+	if choice then
+		local save_prefix = "lvc_lite_"
+		local handle = StartFindKvp(save_prefix);
+		local key = FindKvp(handle)
+		while key ~= nil do
+			DeleteResourceKvp(key)
+			print("LVC Info: Deleting Key \"" .. key .. "\"")
+			key = FindKvp(handle)
+			Citizen.Wait(0)
+		end
+		ResetSettings()
+		print("LVC Info: Successfully cleared all save data.")
+		ShowNotification("~g~LVC Info~s~: Successfully cleared all save data.")
+	end
+end)
+
+
 --Toggle LUX lock command
 RegisterCommand('lvclock', function(source, args)
 	if player_is_emerg_driver then	
@@ -361,14 +387,6 @@ if lockout_master_switch and lockout_hotkey_assignment then
 	end)
 	RegisterKeyMapping( "luxlock", "Lock out ELS Controls", "keyboard", lockout_default_hotkey)
 end
-
-AddEventHandler( "playerSpawned", function()
-	if ( not spawned ) then 
-		show_HUD = GetResourceKvpInt(save_prefix .. "HUD" )
-		print("Loaded " .. save_prefix .. "HUD successfully")
-		spawned = true
-	end 
-end )
 
 ---------------------------------------------------------------------
 --On resource restart
@@ -417,6 +435,25 @@ function ShowText(x, y, align, text, scale)
 	ResetScriptGfxAlign()
 end
 
+------------------------------------------------
+--Fullscreen Confirmation Message
+function FrontEndAlert(title, subtitle)
+	AddTextEntry("FACES_WARNH2", "Warning")
+	AddTextEntry("QM_NO_0", "Are you sure you want to delete all saved LVC data and Factory Reset?")
+	local result = -1
+	while result == -1 do
+		DrawFrontendAlert("FACES_WARNH2", "QM_NO_0", 0, 0, "", 0, -1, 0, "", "", false, 0)
+		ShowText(0.5, 0.75, 0, "~g~No: Escape \t ~r~Yes: Enter", 0.75)
+		if IsDisabledControlJustReleased(2, 202) then
+			return false
+		end		
+		if IsDisabledControlJustReleased(2, 201) then
+			return true
+		end
+		Citizen.Wait(0)
+	end
+end
+
 ---------------------------------------------------------------------
 --Toggles HUD move mode
 function TogMoveMode()
@@ -428,6 +465,114 @@ function TogMoveMode()
 	else					
 		HUD_move_mode = true
 		RageUI.Visible(RMenu:Get('lvc', 'hudsettings'), false)
+	end
+end
+
+------------------------------------------------
+--Save all settings
+function SaveSettings()
+	local save_prefix = "lvc_lite_"
+	--Set KVP value to indicate there is a save present, if so what version
+	local save_version = GetResourceKvpString(save_prefix .. "save_version")
+	if curr_version ~= nil then
+		SetResourceKvp(save_prefix .. "save_version", curr_version)
+	else
+		SetResourceKvp(save_prefix .. "save_version", "Unknown")
+	end
+	
+	--UI Settings
+	SetResourceKvpInt(save_prefix .. "HUD",  BoolToInt(show_HUD))
+	SetResourceKvpFloat(save_prefix .. "HUD_x_offset",  HUD_x_offset + .0)
+	SetResourceKvpFloat(save_prefix .. "HUD_y_offset",  HUD_y_offset + .0)
+	SetResourceKvpInt(save_prefix .. "hud_bgd_opacity",  hud_bgd_opacity)
+	SetResourceKvpInt(save_prefix .. "hud_button_off_opacity",  hud_button_off_opacity)
+
+	--Siren Specific Settings
+	SetResourceKvpInt(save_prefix .. "tone_PMANU_id",  	tone_PMANU_id)
+	SetResourceKvpInt(save_prefix .. "tone_SMANU_id",  	tone_SMANU_id)
+	SetResourceKvpInt(save_prefix .. "tone_AUX_id",  	tone_AUX_id)
+	SetResourceKvpInt(save_prefix .. "park_kill",  BoolToInt(park_kill))
+	SetResourceKvpInt(save_prefix .. "tone_airhorn_intrp",  BoolToInt(tone_airhorn_intrp))
+	SetResourceKvpInt(save_prefix .. "tone_main_reset_standby", BoolToInt(tone_main_reset_standby))
+	
+	--Audio Settings
+	SetResourceKvpInt(save_prefix .. "button_sfx_scheme_id",  button_sfx_scheme_id)
+	SetResourceKvpFloat(save_prefix .. "audio_on_volume",  on_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_off_volume",  off_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_upgrade_volume",  upgrade_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_downgrade_volume",  downgrade_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_activity_reminder_volume",  activity_reminder_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_hazards_volume",  hazards_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_lock_volume",  lock_volume + .0)
+	SetResourceKvpFloat(save_prefix .. "audio_lock_reminder_volume",  lock_reminder_volume + .0)
+	SetResourceKvpInt(save_prefix  ..  "audio_airhorn_button_SFX",  BoolToInt(airhorn_button_SFX))
+	SetResourceKvpInt(save_prefix  ..  "audio_manu_button_SFX",  BoolToInt(manu_button_SFX))
+	SetResourceKvpInt(save_prefix  ..  "audio_activity_reminder_index", activity_reminder_index)
+end
+
+------------------------------------------------
+--Load all settings
+function LoadSettings()
+	local save_prefix = "lvc_lite_"
+	curr_version = GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
+	save_version = GetResourceKvpString(save_prefix .. "save_version")
+	--Is save present if so what version
+	if curr_version ~= save_version and save_version ~= nil then
+		ShowNotification("~r~~h~Warning:~h~ ~s~LVC Save Version Mismatch.\n~o~Save Ver: " .. save_version .. "~s~.\n~b~Resource Ver: " .. curr_version .. "~s~...")
+		ShowNotification("...You may experience issues, to prevent this message from appearing resave vehicle profiles.")
+	end
+	
+	--General Settings
+	if save_version ~= nil then
+		show_HUD = IntToBool(GetResourceKvpInt(save_prefix .. "HUD"))
+		HUD_x_offset = GetResourceKvpFloat(save_prefix .. "HUD_x_offset")
+		HUD_y_offset = GetResourceKvpFloat(save_prefix .. "HUD_y_offset")
+		hud_bgd_opacity = GetResourceKvpInt(save_prefix .. "hud_bgd_opacity")
+		hud_button_off_opacity = GetResourceKvpInt(save_prefix .. "hud_button_off_opacity")
+		
+		--Profile Specific Settings
+		tone_PMANU_id = GetResourceKvpInt(save_prefix .. "tone_PMANU_id")
+		tone_SMANU_id = GetResourceKvpInt(save_prefix .. "tone_SMANU_id")
+		tone_AUX_id = GetResourceKvpInt(save_prefix ..  "tone_AUX_id")
+		tone_airhorn_intrp = IntToBool(GetResourceKvpInt(save_prefix .. "tone_airhorn_intrp"))
+		tone_main_reset_standby = IntToBool(GetResourceKvpInt(save_prefix .. "tone_main_reset_standby"))
+		park_kill = IntToBool(GetResourceKvpInt(save_prefix .. "park_kill"))
+
+		--Audio Settings
+		if ( GetResourceKvpInt(save_prefix .. "button_sfx_scheme_id") ~= nil ) then
+			button_sfx_scheme_id = GetResourceKvpInt(save_prefix .. "button_sfx_scheme_id")
+		else
+			button_sfx_scheme_id = 1
+		end
+		on_volume 			= GetResourceKvpFloat(save_prefix .. "audio_on_volume")	
+		off_volume 			= GetResourceKvpFloat(save_prefix .. "audio_off_volume")		
+		upgrade_volume 		= GetResourceKvpFloat(save_prefix .. "audio_upgrade_volume")		
+		downgrade_volume	= GetResourceKvpFloat(save_prefix .. "audio_downgrade_volume")	
+		activity_reminder_volume = GetResourceKvpFloat(save_prefix .. "audio_activity_reminder_volume")	
+		hazards_volume 		= GetResourceKvpFloat(save_prefix .. "audio_hazards_volume")	
+		lock_volume 		= GetResourceKvpFloat(save_prefix .. "audio_lock_volume")	
+		lock_reminder_volume = GetResourceKvpFloat(save_prefix .. "audio_lock_reminder_volume")
+		airhorn_button_SFX 	 = IntToBool(GetResourceKvpInt(save_prefix .. "audio_airhorn_button_SFX"))
+		manu_button_SFX 	 = IntToBool(GetResourceKvpInt(save_prefix .. "audio_manu_button_SFX"))
+		activity_reminder_index = GetResourceKvpInt(save_prefix  ..  "audio_activity_reminder_index")	
+	end
+end
+
+---------------------------------------------------------------------
+--HELPER FUNCTIONS for main siren settings saving:end
+function IntToBool(int_value)
+	if int_value == 1 then
+		return true
+	else
+		return false
+	end
+end
+
+function BoolToInt(bool_value)
+	if bool_value then
+		return 1
+	else
+		return 0
 	end
 end
 
@@ -723,10 +868,10 @@ Citizen.CreateThread(function()
 						SetVehRadioStation(veh, "OFF")
 						SetVehicleRadioEnabled(veh, false)
 						
-						if state_lxsiren[veh] ~= 2 and state_lxsiren[veh] ~= 3 and state_lxsiren[veh] ~= 4 then
+						if state_lxsiren[veh] ~= 1 and state_lxsiren[veh] ~= 2 and state_lxsiren[veh] ~= 3 and state_lxsiren[veh] ~= 4 then
 							state_lxsiren[veh] = 0
 						end
-						if state_pwrcall[veh] ~= 2 and state_pwrcall[veh] ~= 3 and state_pwrcall[veh] ~= 4 then
+						if state_pwrcall[veh] ~= 1 and state_pwrcall[veh] ~= 2 and state_pwrcall[veh] ~= 3 and state_pwrcall[veh] ~= 4 then
 							state_pwrcall[veh] = 0
 						end
 						if state_airmanu[veh] ~= 1 and state_airmanu[veh] ~= 2 and state_airmanu[veh] ~= 3 and state_airmanu[veh] ~= 4 then
@@ -759,6 +904,10 @@ Citizen.CreateThread(function()
 									if IsVehicleSirenOn(veh) then
 										TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Off", off_volume) -- Off
 										SetVehicleSiren(veh, false)
+										--If the siren was on, save it in memory
+										if state_lxsiren[veh] > 0 and not tone_main_reset_standby then
+											tone_main_mem_id = state_lxsiren[veh]
+										end
 									else
 										TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "On", on_volume) -- On
 										Citizen.Wait(150)
@@ -773,17 +922,24 @@ Citizen.CreateThread(function()
 									if cstate == 0 then
 										if IsVehicleSirenOn(veh) then
 											TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Upgrade", upgrade_volume) -- Upgrade
-											SetLxSirenStateForVeh(veh, 2)
+											if not tone_main_reset_standby then
+												SetLxSirenStateForVeh(veh, tone_main_mem_id)
+											else
+												SetLxSirenStateForVeh(veh, 2)
+											end											
 											count_bcast_timer = delay_bcast_timer
 										end
 									else
 										TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume) -- Downgrade
+										if not tone_main_reset_standby then
+											tone_main_mem_id = state_lxsiren[veh]
+										end
 										SetLxSirenStateForVeh(veh, 0)
 										count_bcast_timer = delay_bcast_timer
 									end
 									
 								-- POWERCALL
-								elseif IsDisabledControlJustReleased(0, 172) and not IsMenuOpen() then
+								elseif IsDisabledControlJustReleased(0, 172) and not IsMenuOpen() and not HUD_move_mode then
 									SetActivityTimer()
 									if state_pwrcall[veh] > 0 then
 										TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume) -- Downgrade
@@ -800,7 +956,7 @@ Citizen.CreateThread(function()
 								end
 								
 								-- BROWSE LX SRN TONES
-								if state_lxsiren[veh] > 1 then
+								if state_lxsiren[veh] > 0 then
 									if IsDisabledControlJustReleased(0, 80) or IsDisabledControlJustReleased(0, 81) then
 										if IsVehicleSirenOn(veh) then
 											local cstate = state_lxsiren[veh]
@@ -867,7 +1023,7 @@ Citizen.CreateThread(function()
 									IsDisabledControlJustReleased(0, 82) or
 									IsDisabledControlJustReleased(0, 85) or 
 									IsDisabledControlJustReleased(0, 246)) then
-										if locked_press_count % reminder_rate == 0 then
+										if locked_press_count % lock_reminder_rate == 0 then
 											TriggerEvent("lux_vehcontrol:ELSClick", "Locked_Press", lock_reminder_volume) -- lock reminder
 											ShowDebug("~y~~h~Reminder:~h~ ~s~Your siren control box is ~r~locked~s~.")
 										end

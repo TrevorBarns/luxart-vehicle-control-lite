@@ -15,21 +15,28 @@ PURPOSE: Handle RageUI menu stuff
 RMenu.Add('lvc', 'main', RageUI.CreateMenu("Luxart Vehicle Control", "Main Menu"))
 RMenu.Add('lvc', 'hudsettings', RageUI.CreateSubMenu(RMenu:Get('lvc', 'main'),"Luxart Vehicle Control", "HUD Settings"))
 RMenu.Add('lvc', 'audiosettings', RageUI.CreateSubMenu(RMenu:Get('lvc', 'main'),"Luxart Vehicle Control", "Audio Settings"))
+RMenu.Add('lvc', 'saveload', RageUI.CreateSubMenu(RMenu:Get('lvc', 'main'),"Luxart Vehicle Control", "Storage Management"))
 RMenu.Add('lvc', 'about', RageUI.CreateSubMenu(RMenu:Get('lvc', 'main'),"Luxart Vehicle Control", "About"))
-RMenu:Get('lvc', 'main'):SetTotalItemsPerPage(12)
+RMenu:Get('lvc', 'main'):SetTotalItemsPerPage(13)
 RMenu:Get('lvc', 'audiosettings'):SetTotalItemsPerPage(12)
 RMenu:Get('lvc', 'main'):DisplayGlare(false)
+RMenu:Get('lvc', 'saveload'):DisplayGlare(false)
 RMenu:Get('lvc', 'hudsettings'):DisplayGlare(false)
 RMenu:Get('lvc', 'audiosettings'):DisplayGlare(false)
 RMenu:Get('lvc', 'about'):DisplayGlare(false)
 
 local github_index = 1
 local hazard_state = false
-local button_sfx_scheme_id = 1
-activity_reminder_index = 1
+local confirm_s_msg
+local confirm_l_msg
+local confirm_fr_msg
+local confirm_s_desc
+local confirm_l_desc
+local confirm_fr_desc
+local profile_s_op = 75
+local profile_l_op = 75
+local tone_list = {{ Name = "Wail", Value = 1 },{ Name = "Yelp", Value = 2 },{ Name = "Priority", Value = 3 }}
 
-tone_list = {{ Name = "Wail", Value = 1 },{ Name = "Yelp", Value = 2 },{ Name = "Priority", Value = 3 }}
-			 
 Keys.Register(open_menu_key, open_menu_key, 'LVC: Open Menu', function()
 	if not key_lock and player_is_emerg_driver and UpdateOnscreenKeyboard() ~= 0 then
 		RageUI.Visible(RMenu:Get('lvc', 'main'), not RageUI.Visible(RMenu:Get('lvc', 'main')))
@@ -43,6 +50,29 @@ function IsMenuOpen()
 	RageUI.Visible(RMenu:Get('lvc', 'audiosettings')) or 
 	RageUI.Visible(RMenu:Get('lvc', 'about'))
 end
+
+--Handle user input to cancel confirmation message for SAVE/LOAD
+Citizen.CreateThread(function()
+	while true do 
+		while not RageUI.Settings.Controls.Back.Enabled do
+			for Index = 1, #RageUI.Settings.Controls.Back.Keys do
+				if IsDisabledControlJustPressed(RageUI.Settings.Controls.Back.Keys[Index][1], RageUI.Settings.Controls.Back.Keys[Index][2]) then
+					confirm_s_msg = nil
+					confirm_s_desc = nil
+					profile_s_op = 50
+					confirm_l_msg = nil
+					confirm_l_desc = nil
+					profile_l_opprofile_l_op = 50
+					Citizen.Wait(10)
+					RageUI.Settings.Controls.Back.Enabled = true
+					break
+				end
+			end
+			Citizen.Wait(0)
+		end
+		Citizen.Wait(100)
+	end
+end)
 
 --Handle Disabling Controls while menu open
 Citizen.CreateThread(function()
@@ -64,6 +94,7 @@ Citizen.CreateThread(function()
     while true do
 		--Main Menu Visible
 	    RageUI.IsVisible(RMenu:Get('lvc', 'main'), function()
+			RageUI.Separator("Siren Settings")		
 			if custom_manual_tones_master_switch then
 				--PMT List
 				RageUI.List('Primary Manual Tone', tone_list, tone_PMANU_id-1, "Change your primary manual tone. Key: R", {}, true, {
@@ -86,6 +117,16 @@ Citizen.CreateThread(function()
 				  end,
 				})
 			end
+			RageUI.Checkbox('Airhorn Interrupt Mode', "Toggles whether the airhorn interupts main siren.", tone_airhorn_intrp, {}, {
+            onSelected = function(Index)				
+                tone_airhorn_intrp = Index
+            end	
+			})
+			RageUI.Checkbox('Reset to Standby', "When enabled, the primary siren will reset to wail. When disabled, the last played tone will resume.", tone_main_reset_standby, {}, {
+            onSelected = function(Index)
+				tone_main_reset_standby = Index
+            end
+            })			
 			RageUI.Checkbox('Siren Park Kill', "Toggles whether your sirens turn off automatically when you exit your vehicle. ", park_kill, {}, {
 			  onSelected = function(Index)
 				  park_kill = Index
@@ -101,7 +142,12 @@ Citizen.CreateThread(function()
 			  onSelected = function()
 			  end,
 			}, RMenu:Get('lvc', 'audiosettings'))	
-			RageUI.Separator("Miscellaneous")			
+			RageUI.Separator("Miscellaneous")		
+			RageUI.Button('Storage Management', "Save / Load LVC profiles.", {RightLabel = "→→→"}, true, {
+			  onSelected = function()
+			  
+			  end,
+			}, RMenu:Get('lvc', 'saveload'))			
 			RageUI.Button('More Information', "Learn more about Luxart Vehicle Control.", {RightLabel = "→→→"}, true, {
 			  onSelected = function()
 
@@ -199,12 +245,12 @@ Citizen.CreateThread(function()
 				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume)
 			  end,			  
 			})					
-			RageUI.Slider('Activity Reminder Volume', (reminder_volume*500), 100, 2, "Set volume of activity reminder tone. Plays when lights are ~g~on~s~, siren is ~r~off~s~, and timer is has finished. Press Enter to play the sound.", true, {}, true, {
+			RageUI.Slider('Activity Reminder Volume', (activity_reminder_volume*500), 100, 2, "Set volume of activity reminder tone. Plays when lights are ~g~on~s~, siren is ~r~off~s~, and timer is has finished. Press Enter to play the sound.", true, {}, true, {
 			  onSliderChange = function(Index)
-				reminder_volume = (Index/500)
+				activity_reminder_volume = (Index/500)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", reminder_volume)
+				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", activity_reminder_volume)
 			  end,			  
 			})			
 			RageUI.Slider('Hazards Volume', (hazards_volume*100), 100, 2, "Set volume of hazards button. Plays when hazards are toggled. Press Enter to play the sound.", true, {}, true, {
@@ -237,6 +283,63 @@ Citizen.CreateThread(function()
 			  end,			  
 			})	
         end)
+		---------------------------------------------------------------------
+		----------------------------SAVE LOAD MENU---------------------------
+		---------------------------------------------------------------------
+	    RageUI.IsVisible(RMenu:Get('lvc', 'saveload'), function()
+			RageUI.Button('Save Settings', confirm_s_desc or "Save LVC settings.", {RightLabel = confirm_s_msg or "", RightLabelOpacity = profile_s_op or 255}, true, {
+				onSelected = function()
+					if confirm_s_msg == "Are you sure?" then
+						RageUI.Settings.Controls.Back.Enabled = true
+						SaveSettings()
+						confirm_s_msg = nil
+						confirm_s_desc = nil
+						profile_s_op = 75
+					else 
+						RageUI.Settings.Controls.Back.Enabled = false 
+						profile_s_op = nil
+						confirm_s_msg = "Are you sure?" 
+						confirm_s_desc = "~r~This will override any exisiting save data."
+						confirm_l_msg = nil
+					end
+				end,
+			})			
+			RageUI.Button('Load Settings', confirm_l_desc or "Load LVC settings. This should be done after switching vehicles.", {RightLabel = confirm_l_msg or "", RightLabelOpacity = profile_l_op or 255}, true, {
+			  onSelected = function()
+				if confirm_l_msg == "Are you sure?" then
+					RageUI.Settings.Controls.Back.Enabled = true
+					LoadSettings()
+					confirm_l_msg = nil
+					confirm_l_desc = nil
+					profile_l_op = 75
+				else 
+					RageUI.Settings.Controls.Back.Enabled = false 
+					profile_l_op = nil
+					confirm_l_msg = "Are you sure?" 
+					confirm_l_desc = "~r~This will override any unsaved settings."
+					confirm_s_msg = nil
+
+				end
+			  end,
+			})			
+			RageUI.Separator("Advanced Settings")
+			RageUI.Button('Factory Reset', confirm_l_desc or "~r~Delete all LVC KVP settings stored locally.", {RightLabel = confirm_fr_msg, RightLabelOpacity = 255}, true, {
+			  onSelected = function()
+				if confirm_fr_msg == "Are you sure?" then
+					RageUI.CloseAll()
+					Citizen.Wait(100)
+					ExecuteCommand('lvcfactoryreset')
+					RageUI.Settings.Controls.Back.Enabled = true
+					confirm_fr_msg = nil
+				else 
+					RageUI.Settings.Controls.Back.Enabled = false 
+					confirm_fr_msg = "Are you sure?" 
+					confirm_l_msg = nil
+					confirm_s_msg = nil
+				end
+			  end,
+			})
+        end)	
 		---------------------------------------------------------------------
 		------------------------------ABOUT MENU-----------------------------
 		---------------------------------------------------------------------
