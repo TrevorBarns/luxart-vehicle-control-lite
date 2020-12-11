@@ -13,7 +13,7 @@ NOTES
 local repo_version
 
 Citizen.CreateThread( function()
-	updatePath = "/TrevorBarns/luxart-vehicle-control"
+	updatePath = "/TrevorBarns/luxart-vehicle-control-lite"
 	resourceName = "Luxart Vehicle Control ("..GetCurrentResourceName()..")"
 	PerformHttpRequest("https://raw.githubusercontent.com"..updatePath.."/master/version", checkVersion, "GET")
 end)
