@@ -151,7 +151,7 @@ Citizen.CreateThread(function()
 	while true do
 		while park_kill and playerped ~= nil and veh ~= nil do
 			if GetIsTaskActive(playerped, 2) then
-				if not tone_main_reset_standby then
+				if not tone_main_reset_standby and state_lxsiren[veh] ~= 0 then
 					tone_main_mem_id = state_lxsiren[veh]
 				end
 				SetLxSirenStateForVeh(veh, 0)
@@ -720,7 +720,6 @@ function SetAirManuStateForVeh(veh, newstate)
 				ReleaseSoundId(snd_airmanu[veh])
 				snd_airmanu[veh] = nil
 			end
-			print(newstate)
 			snd_airmanu[veh] = GetSoundId()
 			if newstate == 1 then
 				if useFiretruckSiren(veh) then
@@ -1046,7 +1045,7 @@ Citizen.CreateThread(function()
 									IsDisabledControlJustReleased(0, 246)) then
 										if locked_press_count % lock_reminder_rate == 0 then
 											TriggerEvent("lux_vehcontrol:ELSClick", "Locked_Press", lock_reminder_volume) -- lock reminder
-											ShowDebug("~y~~h~Reminder:~h~ ~s~Your siren control box is ~r~locked~s~.")
+											ShowNotification("~y~~h~Reminder:~h~ ~s~Your siren control box is ~r~locked~s~.")
 										end
 										locked_press_count = locked_press_count + 1
 								end								
@@ -1077,7 +1076,6 @@ Citizen.CreateThread(function()
 								end
 							end 
 						end
-						--print(hmanu_state_new .. " " .. state_lxsiren[veh])
 						if state_airmanu[veh] ~= hmanu_state_new then
 							SetAirManuStateForVeh(veh, hmanu_state_new)
 							count_bcast_timer = delay_bcast_timer
