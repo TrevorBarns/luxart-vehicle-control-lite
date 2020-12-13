@@ -111,13 +111,13 @@ Citizen.CreateThread(function()
 			end
 			if custom_aux_tones_master_switch then
 				--AST List
-				RageUI.List('Auxiliary Siren Tone', tone_list, tone_AUX_id-1, "Change your auxiliary/dual siren tone. Key: ↑", {}, true, {
+				RageUI.List('Auxiliary Siren Tone', tone_list, tone_AUX_id, "Change your auxiliary/dual siren tone. Key: ↑", {}, not usePowercallAuxSrn(veh), {
 				  onListChange = function(Index, Item)
-					tone_AUX_id = Item.Value+1;
+					tone_AUX_id = Item.Value;
 				  end,
 				})
 			end
-			RageUI.Checkbox('Airhorn Interrupt Mode', "Toggles whether the airhorn interupts main siren.", tone_airhorn_intrp, {}, {
+			RageUI.Checkbox('Airhorn Interrupt Mode', "Toggles whether the airhorn interupts main siren. Not avaliable on fire apparati.", tone_airhorn_intrp, {Enabled = not useFiretruckSiren(veh)}, {
             onSelected = function(Index)				
                 tone_airhorn_intrp = Index
             end	
