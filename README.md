@@ -17,13 +17,13 @@ A small togglable and adjustable visual representation of the scripts functional
 __Adjustable Manual / Auxilary Tones:__
 Change which tone to use for each manual tone (primary and secondary) as well as the auxiliary tone. These are also saved to the client requiring no changes at relog. 
 <p align="center">
-<img align="center" width="530" src="">
+<img align="center" width="530" src="https://i.gyazo.com/ea483d33f0f12f839b8150fb096cea32.png">
 </p>
 
 __Custom Button SFX:__
 Change what sound effect are used when usining your siren controller.
 <p align="center">
-<img align="center" width="530" src="">
+<img align="center" width="530" src="https://i.gyazo.com/7f122e5d80f14eb96208e2a7bc99e7ba.png">
 </p>
 
 __Lockout:__
