@@ -3,7 +3,7 @@ games { 'gta5' }
 
 author 'TrevorBarns w/ credits see GitHub'
 description 'A siren / emergency lights controller for FiveM.'
-version '3.0.3'
+version '3.0.4'
 
 ui_page('html/index.html')
 
@@ -25,7 +25,6 @@ client_scripts {
     'menu/panels/*.lua',
     'menu/windows/*.lua',
 	'SETTINGS.lua',
-	'VEHICLES.lua',
 	'client.lua',
 	'menu.lua'
 }
