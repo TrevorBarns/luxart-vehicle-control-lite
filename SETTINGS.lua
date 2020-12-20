@@ -42,8 +42,8 @@ custom_manual_tones_master_switch = true
 --	Enables manual tone settings menu items to change which tone is played for the primary and secondary manual tones.
 custom_aux_tones_master_switch = true
 --	Enables auxiliary tone settings menu item so players can change which tone is played when AUX siren (Up-Arrow) is enabled. 
---main_siren_set_register_keys_set_defaults = true
---	Enables RegisterKeyMapping for all main_allowed_tones and sets the default keys to numrow 1-0.
+main_siren_register_keys_set_defaults = true
+--	Sets default key for on demand siren keys. DEFAULT: NUMROW 1-3. Set this to false to leave controls unmapped, users may set each in their GTA V > Settings > Hotkeys > FiveM settings.
 
 
 ---------------SOUND EFFECT VOLUMES---------------
@@ -52,8 +52,8 @@ button_sfx_scheme_choices = { 'SSP2000', 'SSP3000', 'Cencom', 'ST300' }
 default_sfx_scheme_name = 'SSP2000'
 default_on_volume = 0.5			
 default_off_volume = 0.7			
-default_upgrade_volume = 0.7		
-default_downgrade_volume = 1
+default_upgrade_volume = 0.5		
+default_downgrade_volume = 0.7
 default_hazards_volume = 0.09
 default_lock_volume = 0.25
 default_lock_reminder_volume = 0.2
