@@ -218,7 +218,7 @@ Citizen.CreateThread(function()
 				on_volume = (Index / 100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "On", on_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "On", on_volume)
 			  end,
 			})			
 			RageUI.Slider('Off Volume', (off_volume*100), 100, 2, "Set volume of light slider / button. Plays when lights are turned ~r~off~s~. Press Enter to play the sound.", true, {}, true, {
@@ -226,7 +226,7 @@ Citizen.CreateThread(function()
 				off_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Off", off_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Off", off_volume)
 			  end,
 			})			
 			RageUI.Slider('Upgrade Volume', (upgrade_volume*100), 100, 2, "Set volume of siren button. Plays when siren is turned ~g~on~s~. Press Enter to play the sound.", true, {}, true, {
@@ -234,7 +234,7 @@ Citizen.CreateThread(function()
 				upgrade_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Upgrade", upgrade_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Upgrade", upgrade_volume)
 			  end,			  
 			})			
 			RageUI.Slider('Downgrade Volume', (downgrade_volume*100), 100, 2, "Set volume of siren button. Plays when siren is turned ~r~off~s~. Press Enter to play the sound.", true, {}, true, {
@@ -242,7 +242,7 @@ Citizen.CreateThread(function()
 				downgrade_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume)
 			  end,			  
 			})					
 			RageUI.Slider('Activity Reminder Volume', (activity_reminder_volume*500), 100, 2, "Set volume of activity reminder tone. Plays when lights are ~g~on~s~, siren is ~r~off~s~, and timer is has finished. Press Enter to play the sound.", true, {}, true, {
@@ -250,7 +250,7 @@ Citizen.CreateThread(function()
 				activity_reminder_volume = (Index/500)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", activity_reminder_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", activity_reminder_volume)
 			  end,			  
 			})			
 			RageUI.Slider('Hazards Volume', (hazards_volume*100), 100, 2, "Set volume of hazards button. Plays when hazards are toggled. Press Enter to play the sound.", true, {}, true, {
@@ -259,9 +259,9 @@ Citizen.CreateThread(function()
 			  end,
 			  onSelected = function(Index, Item)
 				if hazard_state then
-					TriggerEvent("lux_vehcontrol:ELSClick", "Hazards_On", hazards_volume)
+					TriggerEvent("lvc_vehcontrol:ELSClick", "Hazards_On", hazards_volume)
 				else
-					TriggerEvent("lux_vehcontrol:ELSClick", "Hazards_Off", hazards_volume)
+					TriggerEvent("lvc_vehcontrol:ELSClick", "Hazards_Off", hazards_volume)
 				end
 				hazard_state = not hazard_state
 			  end,			  
@@ -271,15 +271,15 @@ Citizen.CreateThread(function()
 				lock_volume = (Index/100)			
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", "Key_Lock", lock_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", "Key_Lock", lock_volume)
 			  end,			  
 			})					
-			RageUI.Slider('Lock Reminder Volume', (lock_volume*100), 100, 2, "Set volume of lock reminder sound. Plays when locked out keys are pressed repeatedly. Press Enter to play the sound.", true, {}, true, {
+			RageUI.Slider('Lock Reminder Volume', (lock_reminder_volume*100), 100, 2, "Set volume of lock reminder sound. Plays when locked out keys are pressed repeatedly. Press Enter to play the sound.", true, {}, true, {
 			  onSliderChange = function(Index)
-				lock_volume = (Index/100)
+				lock_reminder_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lux_vehcontrol:ELSClick", "Locked_Press", on_volume)
+				TriggerEvent("lvc_vehcontrol:ELSClick", "Locked_Press", on_volume)
 			  end,			  
 			})	
         end)
