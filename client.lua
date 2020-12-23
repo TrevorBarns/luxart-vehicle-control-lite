@@ -407,6 +407,7 @@ end
 --On resource restart
 Citizen.CreateThread(function()
 	TriggerServerEvent('lvc_GetVersion_s')
+	RegisterKeyMaps()
 end)
 
 ------------------------------------------------
@@ -533,8 +534,9 @@ function LoadSettings()
 	save_version = GetResourceKvpString(save_prefix .. "save_version")
 	--Is save present if so what version
 	if curr_version ~= save_version and save_version ~= nil then
-		ShowNotification("~r~~h~Warning:~h~ ~s~LVC Save Version Mismatch.\n~o~Save Ver: " .. save_version .. "~s~.\n~b~Resource Ver: " .. curr_version .. "~s~...")
-		ShowNotification("...You may experience issues, to prevent this message from appearing resave vehicle profiles.")
+		AddTextEntry("lux_mismatch_version","~r~~h~Warning:~h~ ~s~Luxart Vehicle Control Save Version Mismatch.\n~o~Save Ver: " .. save_version .. "~s~\n~b~Resource Ver: " .. curr_version .. "~s~\nYou may experience issues, to prevent this message from appearing resave vehicle profiles.")
+		SetNotificationTextEntry("lux_mismatch_version")
+		DrawNotification(false, true)
 	end
 	
 	--General Settings
