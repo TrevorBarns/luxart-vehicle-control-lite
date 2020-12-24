@@ -99,21 +99,6 @@ local snd_lxsiren = {}
 local snd_pwrcall = {}
 local snd_airmanu = {}
 
--- these models will use their real wail siren, as determined by their assigned audio hash in vehicles.meta
-local eModelsWithFireSrn =
-{
-	"FIRETRUK",
-}
-
--- models listed below will use AMBULANCE_WARNING as auxiliary siren
--- unlisted models will instead use the default wail as the auxiliary siren
-local eModelsWithPcall =
-{	
-	"AMBULANCE",
-	"FIRETRUK",
-	"LGUARD",
-}
-
 ----------------THREADED FUNCTIONS----------------
 -- Set check variable `player_is_emerg_driver` if player is driver of emergency vehicle.
 -- Disables controls faster than previous thread. 
