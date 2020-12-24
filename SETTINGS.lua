@@ -1,13 +1,13 @@
 
 -----------------VEHICLE SETTINGS------------------
 -- Models listed below will use default siren as set in vehicles.meta
-local eModelsWithFireSrn =
+eModelsWithFireSrn =
 {
 	"FIRETRUK",
 }
 
 -- Models listed below will use AMBULANCE_WARNING as auxiliary siren
-local eModelsWithPcall =
+eModelsWithPcall =
 {	
 	"AMBULANCE",
 	"FIRETRUK",
