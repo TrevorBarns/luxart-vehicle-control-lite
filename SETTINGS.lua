@@ -1,3 +1,19 @@
+
+-----------------VEHICLE SETTINGS------------------
+-- Models listed below will use default siren as set in vehicles.meta
+local eModelsWithFireSrn =
+{
+	"FIRETRUK",
+}
+
+-- Models listed below will use AMBULANCE_WARNING as auxiliary siren
+local eModelsWithPcall =
+{	
+	"AMBULANCE",
+	"FIRETRUK",
+	"LGUARD",
+}
+
 -------------------MENU SETTINGS-------------------
 open_menu_key = 'O'
 --	Sets default key for RegisterKeyMapping. Examples: 'l','F5', etc. DEFAULT: NONE, users may set one in their GTA V > Settings > Hotkeys > FiveM settings. 
