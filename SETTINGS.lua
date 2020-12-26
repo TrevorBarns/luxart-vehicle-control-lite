@@ -46,7 +46,7 @@ hud_button_off_opacity = 175
 hazard_key = 202
 --	Static/Fixed keybinding to toggle hazards: https://docs.fivem.net/docs/game-references/controls/
 hazard_hold_duration = 750
---	Time in milliseconds backspace must be pressed to turn on / off hazard lights. 
+--	Time in milliseconds backspace must be pressed to turn on / off hazard lights. Caution: While the script waits this duration other hotkeys will not work, I recommend keeping this below 1000ms. 
 left_signal_key = 84
 --	Static/Fixed keybinding to toggle left indicator: https://docs.fivem.net/docs/game-references/controls/
 right_signal_key = 83
