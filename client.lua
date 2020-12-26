@@ -474,12 +474,7 @@ end
 function SaveSettings()
 	local save_prefix = "lvc_lite_"
 	--Set KVP value to indicate there is a save present, if so what version
-	local save_version = GetResourceKvpString(save_prefix .. "save_version")
-	if curr_version ~= nil then
-		SetResourceKvp(save_prefix .. "save_version", curr_version)
-	else
-		SetResourceKvp(save_prefix .. "save_version", "Unknown")
-	end
+	SetResourceKvp(save_prefix .. "save_version", curr_version)
 	
 	--UI Settings
 	SetResourceKvpInt(save_prefix .. "HUD",  BoolToInt(show_HUD))
@@ -515,11 +510,13 @@ end
 --Load all settings
 function LoadSettings()
 	local save_prefix = "lvc_lite_"
-	curr_version = GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
+	comp_version = GetResourceMetadata(GetCurrentResourceName(), 'compatible', 0)
 	save_version = GetResourceKvpString(save_prefix .. "save_version")
+	compatible = IsCompatibleVersion(save_version, comp_version)
+	
 	--Is save present if so what version
-	if curr_version ~= save_version and save_version ~= nil then
-		AddTextEntry("lux_mismatch_version","~r~~h~Warning:~h~ ~s~Luxart Vehicle Control Save Version Mismatch.\n~o~Save Ver: " .. save_version .. "~s~\n~b~Resource Ver: " .. curr_version .. "~s~\nYou may experience issues, to prevent this message from appearing resave vehicle profiles.")
+	if not compatible then
+		AddTextEntry("lux_mismatch_version","~r~~h~Warning:~h~ ~s~Luxart Vehicle Control Save Version Mismatch.\n~b~Compatible Ver: " .. comp_version .. "\n~o~Save Ver: " .. save_version .. "~s~\nYou may experience issues, to prevent this message from appearing verify settings and resave.")
 		SetNotificationTextEntry("lux_mismatch_version")
 		DrawNotification(false, true)
 	end
@@ -599,6 +596,30 @@ end
 
 ------------------------------------------------
 --HELPER FUNCTIONS for main siren settings saving:end
+--Compare Version Strings
+function IsCompatibleVersion(save_version, compatible_version)
+	if compatible_version == nil then
+		return false
+	end
+	
+	_, _, s1, s2, s3 = string.find( save_version, "(%d+)%.(%d+)%.(%d+)" )
+	_, _, c1, c2, c3 = string.find( compatible_version, "(%d+)%.(%d+)%.(%d+)" )
+	
+	if s1 < c1 then				-- s1.0.0 Vs c1.0.0
+		return false
+	else
+		if c2 < s2 then			-- 0.s2.0 Vs 0.c2.0
+			return false		
+		else
+			if c3 < s3 then		-- 0.0.s3 Vs 0.0.c3
+				return false
+			else
+				return true
+			end
+		end
+	end
+end
+
 function IntToBool(int_value)
 	if int_value == 1 then
 		return true
