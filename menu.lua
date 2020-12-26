@@ -2,10 +2,10 @@
 ---------------------------------------------------
 LUXART VEHICLE CONTROL (FOR FIVEM)
 ---------------------------------------------------
-Last revision: AUGUST 27, 2020  (VERS.3.04)
+Last revision: DECEMBER 26 2020 (VERS. 3.0.5)
 Coded by Lt.Caine
 ELS Clicks by Faction
-Additions by TrevorBarns
+Additonal Modification by TrevorBarns
 ---------------------------------------------------
 FILE: menu.lua
 PURPOSE: Handle RageUI menu stuff
@@ -218,7 +218,7 @@ Citizen.CreateThread(function()
 				on_volume = (Index / 100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "On", on_volume)
+				TriggerEvent("lvc:audio", button_sfx_scheme .. "/" .. "On", on_volume)
 			  end,
 			})			
 			RageUI.Slider('Off Volume', (off_volume*100), 100, 2, "Set volume of light slider / button. Plays when lights are turned ~r~off~s~. Press Enter to play the sound.", true, {}, true, {
@@ -226,7 +226,7 @@ Citizen.CreateThread(function()
 				off_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Off", off_volume)
+				TriggerEvent("lvc:audio", button_sfx_scheme .. "/" .. "Off", off_volume)
 			  end,
 			})			
 			RageUI.Slider('Upgrade Volume', (upgrade_volume*100), 100, 2, "Set volume of siren button. Plays when siren is turned ~g~on~s~. Press Enter to play the sound.", true, {}, true, {
@@ -234,7 +234,7 @@ Citizen.CreateThread(function()
 				upgrade_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Upgrade", upgrade_volume)
+				TriggerEvent("lvc:audio", button_sfx_scheme .. "/" .. "Upgrade", upgrade_volume)
 			  end,			  
 			})			
 			RageUI.Slider('Downgrade Volume', (downgrade_volume*100), 100, 2, "Set volume of siren button. Plays when siren is turned ~r~off~s~. Press Enter to play the sound.", true, {}, true, {
@@ -242,7 +242,7 @@ Citizen.CreateThread(function()
 				downgrade_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume)
+				TriggerEvent("lvc:audio", button_sfx_scheme .. "/" .. "Downgrade", downgrade_volume)
 			  end,			  
 			})					
 			RageUI.Slider('Activity Reminder Volume', (activity_reminder_volume*500), 100, 2, "Set volume of activity reminder tone. Plays when lights are ~g~on~s~, siren is ~r~off~s~, and timer is has finished. Press Enter to play the sound.", true, {}, true, {
@@ -250,7 +250,7 @@ Citizen.CreateThread(function()
 				activity_reminder_volume = (Index/500)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", button_sfx_scheme .. "/" .. "Reminder", activity_reminder_volume)
+				TriggerEvent("lvc:audio", button_sfx_scheme .. "/" .. "Reminder", activity_reminder_volume)
 			  end,			  
 			})			
 			RageUI.Slider('Hazards Volume', (hazards_volume*100), 100, 2, "Set volume of hazards button. Plays when hazards are toggled. Press Enter to play the sound.", true, {}, true, {
@@ -259,9 +259,9 @@ Citizen.CreateThread(function()
 			  end,
 			  onSelected = function(Index, Item)
 				if hazard_state then
-					TriggerEvent("lvc_vehcontrol:ELSClick", "Hazards_On", hazards_volume)
+					TriggerEvent("lvc:audio", "Hazards_On", hazards_volume)
 				else
-					TriggerEvent("lvc_vehcontrol:ELSClick", "Hazards_Off", hazards_volume)
+					TriggerEvent("lvc:audio", "Hazards_Off", hazards_volume)
 				end
 				hazard_state = not hazard_state
 			  end,			  
@@ -271,7 +271,7 @@ Citizen.CreateThread(function()
 				lock_volume = (Index/100)			
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", "Key_Lock", lock_volume)
+				TriggerEvent("lvc:audio", "Key_Lock", lock_volume)
 			  end,			  
 			})					
 			RageUI.Slider('Lock Reminder Volume', (lock_reminder_volume*100), 100, 2, "Set volume of lock reminder sound. Plays when locked out keys are pressed repeatedly. Press Enter to play the sound.", true, {}, true, {
@@ -279,7 +279,7 @@ Citizen.CreateThread(function()
 				lock_reminder_volume = (Index/100)
 			  end,
 			  onSelected = function(Index, Item)
-				TriggerEvent("lvc_vehcontrol:ELSClick", "Locked_Press", on_volume)
+				TriggerEvent("lvc:audio", "Locked_Press", lock_reminder_volume)
 			  end,			  
 			})	
         end)
@@ -345,12 +345,13 @@ Citizen.CreateThread(function()
 		---------------------------------------------------------------------
 	    RageUI.IsVisible(RMenu:Get('lvc', 'about'), function()
 			if curr_version ~= nil then
-				if curr_version ~= repo_version then
-					RageUI.Button('Current Version', "This server is running v." .. curr_version, { RightLabel = "~o~~h~v." .. curr_version or "unknown" }, true, {
+				--print(repo_version, curr_version, IsNewerVersion(repo_version, curr_version))
+				if IsNewerVersion(repo_version, curr_version) then
+					RageUI.Button('Current Version', "This server is running " .. curr_version, { RightLabel = "~o~~h~" .. curr_version or "unknown" }, true, {
 					  onSelected = function()
 					  end,
 					  });	
-					RageUI.Button('Latest Version', "The latest update is v." .. repo_version .. ". Contact a server developer.", {RightLabel = repo_version_text or "unknown"}, true, {
+					RageUI.Button('Latest Version', "The latest update is " .. repo_version .. ". Contact a server developer.", {RightLabel = repo_version or "unknown"}, true, {
 						onSelected = function()
 					end,
 					});
