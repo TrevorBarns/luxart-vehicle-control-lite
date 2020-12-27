@@ -42,19 +42,20 @@ __SETTINGS.lua:__
 One stop shop for all customizable settings to reduce server developer workload.
 
 ## How to install:
-1. Add lux_vehcontrol folder into your server resources.
-2. Add `ensure lux_vehcontrol` or `start lux_vehcontrol` to server.cfg
+1. Download the latest stable (or beta if you're brave) from the release section on the right side.
+2. Add lux_vehcontrol_lite folder into your server resources.
+3. Add `ensure lux_vehcontrol_lite` or `start lux_vehcontrol_lite` to server.cfg
 
 __If you DO NOT stream commonmenu.ytd with another resource:__
 
-2. Keep the stream folder present, you don't need to move or change a thing. Continue to step #4.
+4. Keep the stream folder present, you don't need to move or change a thing. Continue to step #6.
 
 __If you stream commonmenu.ytd with another resource (for example to stream custom vMenu textures):__
 
-2. Navigate to `lux_vehcontrol/extras/RawTextures` add all textures to other resource's commonmenu.ytd. 
-3. Remove or Rename stream folder to prevent overriding othe resource's commonmenu.ytd. 
-4. Open config.lua and configure to your liking. Install any additional tones you would like to enable locally.
-5. Enjoy!
+4. Navigate to `lux_vehcontrol/extras/RawTextures` add all textures to other resource's commonmenu.ytd. 
+5. Remove or Rename `commonmenu.ytd` from stream folder to prevent overriding othe resource's commonmenu.ytd. 
+6. Open SETTINGS.lua and configure to your liking. Install any additional tones you would like to enable locally.
+7. Enjoy!
 
 ## Credits:
 Luxart Vehicle Control was an ingenious creation by __Lt. Caine__! Thank you! 
