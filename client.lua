@@ -352,15 +352,17 @@ RegisterKeyMapping("lvclock", "LVC: Lock out controls", "keyboard", lockout_defa
 function RegisterKeyMaps()
 	for i=1, 3 do
 		RegisterCommand('_lvc_siren_'..i, function(source, args)
-			if veh ~= nil and player_is_emerg_driver then
-				if state_lxsiren[veh] ~= i or state_lxsiren[veh] == 0 then
-					TriggerEvent("lvc:audio", button_sfx_scheme .. "/" ..  "Upgrade", upgrade_volume)
-					SetLxSirenStateForVeh(veh, i)
-					count_bcast_timer = delay_bcast_timer
-				else
-					TriggerEvent("lvc:audio", button_sfx_scheme .. "/" ..  "Downgrade", downgrade_volume)
-					SetLxSirenStateForVeh(veh, 0)
-					count_bcast_timer = delay_bcast_timer				
+			if veh ~= nil and player_is_emerg_driver ~= nil then
+				if IsVehicleSirenOn(veh) and player_is_emerg_driver and not key_lock then
+					if state_lxsiren[veh] ~= i or state_lxsiren[veh] == 0 then
+						TriggerEvent("lvc:audio", button_sfx_scheme .. "/" ..  "Upgrade", upgrade_volume)
+						SetLxSirenStateForVeh(veh, i)
+						count_bcast_timer = delay_bcast_timer
+					else
+						TriggerEvent("lvc:audio", button_sfx_scheme .. "/" ..  "Downgrade", downgrade_volume)
+						SetLxSirenStateForVeh(veh, 0)
+						count_bcast_timer = delay_bcast_timer				
+					end
 				end
 			end
 		end)
