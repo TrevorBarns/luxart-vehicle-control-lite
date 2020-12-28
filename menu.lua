@@ -287,55 +287,26 @@ Citizen.CreateThread(function()
 		----------------------------SAVE LOAD MENU---------------------------
 		---------------------------------------------------------------------
 	    RageUI.IsVisible(RMenu:Get('lvc', 'saveload'), function()
-			RageUI.Button('Save Settings', confirm_s_desc or "Save LVC settings.", {RightLabel = confirm_s_msg or "", RightLabelOpacity = profile_s_op or 255}, true, {
-				onSelected = function()
-					if confirm_s_msg == "Are you sure?" then
-						RageUI.Settings.Controls.Back.Enabled = true
-						SaveSettings()
-						confirm_s_msg = nil
-						confirm_s_desc = nil
-						profile_s_op = 75
-					else 
-						RageUI.Settings.Controls.Back.Enabled = false 
-						profile_s_op = nil
-						confirm_s_msg = "Are you sure?" 
-						confirm_s_desc = "~r~This will override any exisiting save data."
-						confirm_l_msg = nil
-					end
-				end,
-			})			
-			RageUI.Button('Load Settings', confirm_l_desc or "Load LVC settings. This should be done after switching vehicles.", {RightLabel = confirm_l_msg or "", RightLabelOpacity = profile_l_op or 255}, true, {
+			RageUI.Button('Save Settings', confirm_s_desc or "Save LVC settings.", {}, true, {
 			  onSelected = function()
-				if confirm_l_msg == "Are you sure?" then
-					RageUI.Settings.Controls.Back.Enabled = true
+			  	SaveSettings()
+			  end,
+			})			
+			RageUI.Button('Load Settings', confirm_l_desc or "Load LVC settings.", {}, true, {
+			  onSelected = function()
 					LoadSettings()
-					confirm_l_msg = nil
-					confirm_l_desc = nil
-					profile_l_op = 75
-				else 
-					RageUI.Settings.Controls.Back.Enabled = false 
-					profile_l_op = nil
-					confirm_l_msg = "Are you sure?" 
-					confirm_l_desc = "~r~This will override any unsaved settings."
-					confirm_s_msg = nil
-
-				end
 			  end,
 			})			
 			RageUI.Separator("Advanced Settings")
-			RageUI.Button('Factory Reset', confirm_l_desc or "~r~Delete all LVC KVP settings stored locally.", {RightLabel = confirm_fr_msg, RightLabelOpacity = 255}, true, {
+			RageUI.Button('Factory Reset', "~r~Permanently delete any saves, resetting LVC to its default state.", {RightLabel = confirm_fr_msg, RightLabelOpacity = 255}, true, {
 			  onSelected = function()
-				if confirm_fr_msg == "Are you sure?" then
-					RageUI.CloseAll()
+				if confirm_fr_msg == "~r~Are you sure?" then
 					Citizen.Wait(100)
+					RageUI.Visible(RMenu:Get('lvc', 'saveload'), not RageUI.Visible(RMenu:Get('lvc', 'saveload')))
 					ExecuteCommand('lvcfactoryreset')
-					RageUI.Settings.Controls.Back.Enabled = true
 					confirm_fr_msg = nil
 				else 
-					RageUI.Settings.Controls.Back.Enabled = false 
-					confirm_fr_msg = "Are you sure?" 
-					confirm_l_msg = nil
-					confirm_s_msg = nil
+					confirm_fr_msg = "~r~Are you sure?" 
 				end
 			  end,
 			})

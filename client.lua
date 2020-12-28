@@ -312,21 +312,18 @@ end )
 ---------------REGISTERED COMMANDS----------------
 --Deletes all saved KVPs for that vehicle profile
 RegisterCommand('lvcfactoryreset', function(source, args)
-	local choice = FrontEndAlert("Warning", "Are you sure you want to delete all saved LVC data and Factory Reset?")
-	if choice then
-		local save_prefix = "lvc_lite_"
-		local handle = StartFindKvp(save_prefix);
-		local key = FindKvp(handle)
-		while key ~= nil do
-			DeleteResourceKvp(key)
-			print("LVC Info: Deleting Key \"" .. key .. "\"")
-			key = FindKvp(handle)
-			Citizen.Wait(0)
-		end
-		ResetSettings()
-		print("LVC Info: Successfully cleared all save data.")
-		ShowNotification("~g~LVC Info~s~: Successfully cleared all save data.")
+	local save_prefix = "lvc_lite_"
+	local handle = StartFindKvp(save_prefix);
+	local key = FindKvp(handle)
+	while key ~= nil do
+		DeleteResourceKvp(key)
+		print("LVC Info: Deleting Key \"" .. key .. "\"")
+		key = FindKvp(handle)
+		Citizen.Wait(0)
 	end
+	ResetSettings()
+	print("LVC Info: Successfully cleared all save data.")
+	ShowNotification("~g~Success~s~: You have deleted all save data and reset LVC.")
 end)
 
 
@@ -428,25 +425,6 @@ function ShowText(x, y, align, text, scale)
 end
 
 ------------------------------------------------
---Fullscreen Confirmation Message
-function FrontEndAlert(title, subtitle)
-	AddTextEntry("FACES_WARNH2", "Warning")
-	AddTextEntry("QM_NO_0", "Are you sure you want to delete all saved LVC data and Factory Reset?")
-	local result = -1
-	while result == -1 do
-		DrawFrontendAlert("FACES_WARNH2", "QM_NO_0", 0, 0, "", 0, -1, 0, "", "", false, 0)
-		ShowText(0.5, 0.75, 0, "~g~No: Escape \t ~r~Yes: Enter", 0.75)
-		if IsDisabledControlJustReleased(2, 202) then
-			return false
-		end		
-		if IsDisabledControlJustReleased(2, 201) then
-			return true
-		end
-		Citizen.Wait(0)
-	end
-end
-
-------------------------------------------------
 --Toggles HUD move mode
 function TogMoveMode()
 	ShowHUD()
@@ -495,6 +473,8 @@ function SaveSettings()
 	SetResourceKvpInt(save_prefix  ..  "audio_airhorn_button_SFX",  BoolToInt(airhorn_button_SFX))
 	SetResourceKvpInt(save_prefix  ..  "audio_manu_button_SFX",  BoolToInt(manu_button_SFX))
 	SetResourceKvpInt(save_prefix  ..  "audio_activity_reminder_index", activity_reminder_index)
+	
+	ShowNotification("~g~Success~s~: Your settings have been saved.")
 end
 
 ------------------------------------------------
@@ -545,6 +525,7 @@ function LoadSettings()
 		airhorn_button_SFX 	 = IntToBool(GetResourceKvpInt(save_prefix .. "audio_airhorn_button_SFX"))
 		manu_button_SFX 	 = IntToBool(GetResourceKvpInt(save_prefix .. "audio_manu_button_SFX"))
 		activity_reminder_index = GetResourceKvpInt(save_prefix  ..  "audio_activity_reminder_index")	
+		ShowNotification("~g~Success~s~: Your settings have been loaded.")
 	end
 end
 
@@ -1095,7 +1076,7 @@ Citizen.CreateThread(function()
 									IsDisabledControlJustReleased(0, 246)) then
 										if locked_press_count % lock_reminder_rate == 0 then
 											TriggerEvent("lvc:audio", "Locked_Press", lock_reminder_volume) -- lock reminder
-											ShowNotification("~y~~h~Reminder:~h~ ~s~Your siren control box is ~r~locked~s~.")
+											ShowNotification("~y~~h~Reminder~h~~s~: Your siren control box is ~r~locked~s~.")
 										end
 										locked_press_count = locked_press_count + 1
 								end								
