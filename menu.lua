@@ -27,14 +27,7 @@ RMenu:Get('lvc', 'about'):DisplayGlare(false)
 
 local github_index = 1
 local hazard_state = false
-local confirm_s_msg
-local confirm_l_msg
-local confirm_fr_msg
-local confirm_s_desc
-local confirm_l_desc
-local confirm_fr_desc
-local profile_s_op = 75
-local profile_l_op = 75
+local confirm_reset_msg
 local tone_list = {{ Name = "Wail", Value = 1 },{ Name = "Yelp", Value = 2 },{ Name = "Priority", Value = 3 }}
 
 Keys.Register(open_menu_key, open_menu_key, 'LVC: Open Menu', function()
@@ -48,21 +41,17 @@ function IsMenuOpen()
 	return RageUI.Visible(RMenu:Get('lvc', 'main')) or 
 	RageUI.Visible(RMenu:Get('lvc', 'hudsettings')) or 
 	RageUI.Visible(RMenu:Get('lvc', 'audiosettings')) or 
+	RageUI.Visible(RMenu:Get('lvc', 'saveload')) or 
 	RageUI.Visible(RMenu:Get('lvc', 'about'))
 end
 
---Handle user input to cancel confirmation message for SAVE/LOAD
+--Handle user input to cancel confirmation message for FACTORY RESET
 Citizen.CreateThread(function()
 	while true do 
 		while not RageUI.Settings.Controls.Back.Enabled do
 			for Index = 1, #RageUI.Settings.Controls.Back.Keys do
 				if IsDisabledControlJustPressed(RageUI.Settings.Controls.Back.Keys[Index][1], RageUI.Settings.Controls.Back.Keys[Index][2]) then
-					confirm_s_msg = nil
-					confirm_s_desc = nil
-					profile_s_op = 50
-					confirm_l_msg = nil
-					confirm_l_desc = nil
-					profile_l_opprofile_l_op = 50
+					confirm_reset_msg = ""
 					Citizen.Wait(10)
 					RageUI.Settings.Controls.Back.Enabled = true
 					break
@@ -97,13 +86,13 @@ Citizen.CreateThread(function()
 			RageUI.Separator("Siren Settings")		
 			if custom_manual_tones_master_switch then
 				--PMT List
-				RageUI.List('Primary Manual Tone', tone_list, tone_PMANU_id-1, "Change your primary manual tone. Key: R", {}, true, {
+				RageUI.List('Primary Manual Tone', tone_list, tone_PMANU_id-1, "Change your primary manual tone.", {}, true, {
 				  onListChange = function(Index, Item)
 					tone_PMANU_id = Item.Value+1;
 				  end,
 				})
 				--SMT List
-				RageUI.List('Secondary Manual Tone', tone_list, tone_SMANU_id-1, "Change your secondary manual tone. Key: E+R", {}, true, {
+				RageUI.List('Secondary Manual Tone', tone_list, tone_SMANU_id-1, "Change your secondary manual tone.", {}, true, {
 				  onListChange = function(Index, Item)
 					tone_SMANU_id = Item.Value+1;
 				  end,
@@ -111,7 +100,7 @@ Citizen.CreateThread(function()
 			end
 			if custom_aux_tones_master_switch then
 				--AST List
-				RageUI.List('Auxiliary Siren Tone', tone_list, tone_AUX_id, "Change your auxiliary/dual siren tone. Key: ↑", {}, not usePowercallAuxSrn(veh), {
+				RageUI.List('Auxiliary Siren Tone', tone_list, tone_AUX_id, "Change your auxiliary/dual siren tone.", {}, not usePowercallAuxSrn(veh), {
 				  onListChange = function(Index, Item)
 					tone_AUX_id = Item.Value;
 				  end,
@@ -122,7 +111,7 @@ Citizen.CreateThread(function()
                 tone_airhorn_intrp = Index
             end	
 			})
-			RageUI.Checkbox('Reset to Standby', "When enabled, the primary siren will reset to wail. When disabled, the last played tone will resume.", tone_main_reset_standby, {}, {
+			RageUI.Checkbox('Reset to Standby', "When enabled, the primary siren will reset to the first siren tone. When disabled, the last played tone will resume.", tone_main_reset_standby, {}, {
             onSelected = function(Index)
 				tone_main_reset_standby = Index
             end
@@ -143,7 +132,7 @@ Citizen.CreateThread(function()
 			  end,
 			}, RMenu:Get('lvc', 'audiosettings'))	
 			RageUI.Separator("Miscellaneous")		
-			RageUI.Button('Storage Management', "Save / Load LVC profiles.", {RightLabel = "→→→"}, true, {
+			RageUI.Button('Storage Management', "Save, load or reset settings.", {RightLabel = "→→→"}, true, {
 			  onSelected = function()
 			  
 			  end,
@@ -158,7 +147,7 @@ Citizen.CreateThread(function()
 		-------------------------OTHER SETTINGS MENU-------------------------
 		---------------------------------------------------------------------
 	    RageUI.IsVisible(RMenu:Get('lvc', 'hudsettings'), function()
-			RageUI.Checkbox('HUD Visible', "Toggles whether the LVC HUD is on screen.\nCan't see it? Ensure HUD is enabled.", show_HUD, {}, {
+			RageUI.Checkbox('HUD Visible', "Toggles whether the HUD is on screen.\nCan't see it? Ensure HUD is enabled in GTA V settings.", show_HUD, {}, {
 			  onSelected = function(Index)
 				  show_HUD = Index	  
 			  end
@@ -287,26 +276,27 @@ Citizen.CreateThread(function()
 		----------------------------SAVE LOAD MENU---------------------------
 		---------------------------------------------------------------------
 	    RageUI.IsVisible(RMenu:Get('lvc', 'saveload'), function()
-			RageUI.Button('Save Settings', confirm_s_desc or "Save LVC settings.", {}, true, {
+			RageUI.Button('Save Settings', "Save all LVC options. All saving is client side and shared among servers.", {}, true, {
 			  onSelected = function()
 			  	SaveSettings()
 			  end,
 			})			
-			RageUI.Button('Load Settings', confirm_l_desc or "Load LVC settings.", {}, true, {
+			RageUI.Button('Load Settings', "Load settings.", {}, true, {
 			  onSelected = function()
 					LoadSettings()
 			  end,
 			})			
 			RageUI.Separator("Advanced Settings")
-			RageUI.Button('Factory Reset', "~r~Permanently delete any saves, resetting LVC to its default state.", {RightLabel = confirm_fr_msg, RightLabelOpacity = 255}, true, {
+			RageUI.Button('Factory Reset', "~r~Permanently delete any saves, resetting LVC to its default state.", {RightLabel = confirm_reset_msg, RightLabelOpacity = 255}, true, {
 			  onSelected = function()
-				if confirm_fr_msg == "~r~Are you sure?" then
+				if confirm_reset_msg == "~r~Are you sure?" then
 					Citizen.Wait(100)
 					RageUI.Visible(RMenu:Get('lvc', 'saveload'), not RageUI.Visible(RMenu:Get('lvc', 'saveload')))
 					ExecuteCommand('lvcfactoryreset')
-					confirm_fr_msg = nil
+					confirm_reset_msg = nil
 				else 
-					confirm_fr_msg = "~r~Are you sure?" 
+					RageUI.Settings.Controls.Back.Enabled = false
+					confirm_reset_msg = "~r~Are you sure?" 
 				end
 			  end,
 			})
