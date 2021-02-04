@@ -2,7 +2,7 @@
 ---------------------------------------------------
 LUXART VEHICLE CONTROL (FOR FIVEM)
 ---------------------------------------------------
-Last revision: DECEMBER 26 2020 (VERS. 3.0.5)
+Last revision: DECEMBER 26 2020 (VERS. 3.0.6)
 Coded by Lt.Caine
 ELS Clicks by Faction
 Additonal Modification by TrevorBarns
@@ -117,7 +117,6 @@ Citizen.CreateThread(function()
 		Citizen.Wait(1)
 	end
 end)
-
 
 -- ParkKill Functionality
 Citizen.CreateThread(function()
@@ -525,6 +524,7 @@ function LoadSettings()
 		airhorn_button_SFX 	 = IntToBool(GetResourceKvpInt(save_prefix .. "audio_airhorn_button_SFX"))
 		manu_button_SFX 	 = IntToBool(GetResourceKvpInt(save_prefix .. "audio_manu_button_SFX"))
 		activity_reminder_index = GetResourceKvpInt(save_prefix  ..  "audio_activity_reminder_index")	
+		
 		ShowNotification("~g~Success~s~: Your settings have been loaded.")
 	end
 end
@@ -718,13 +718,15 @@ function SetLxSirenStateForVeh(veh, newstate)
 				StopSound(snd_lxsiren[veh])
 				ReleaseSoundId(snd_lxsiren[veh])
 				snd_lxsiren[veh] = nil
-			end			
-			if useFiretruckSiren(veh) and newstate == 1 then
-				TogMuteDfltSrnForVeh(veh, false)	
-			else
-				snd_lxsiren[veh] = GetSoundId()
-				PlaySoundFromEntity(snd_lxsiren[veh], siren_string_lookup[newstate], veh, 0, 0, 0)
-				TogMuteDfltSrnForVeh(veh, true)		
+			end		
+			if newstate ~= 0 then
+				if useFiretruckSiren(veh) and newstate == 1 then
+					TogMuteDfltSrnForVeh(veh, false)	
+				else
+					snd_lxsiren[veh] = GetSoundId()
+					PlaySoundFromEntity(snd_lxsiren[veh], siren_string_lookup[newstate], veh, 0, 0, 0)
+					TogMuteDfltSrnForVeh(veh, true)		
+				end
 			end
 			state_lxsiren[veh] = newstate
 		end
@@ -739,8 +741,10 @@ function SetPowercallStateForVeh(veh, newstate)
 				ReleaseSoundId(snd_pwrcall[veh])
 				snd_pwrcall[veh] = nil
 			end
-			snd_pwrcall[veh] = GetSoundId()
-			PlaySoundFromEntity(snd_pwrcall[veh], siren_string_lookup[newstate], veh, 0, 0, 0)	
+			if newstate ~= 0 then
+				snd_pwrcall[veh] = GetSoundId()
+				PlaySoundFromEntity(snd_pwrcall[veh], siren_string_lookup[newstate], veh, 0, 0, 0)	
+			end
 			state_pwrcall[veh] = newstate
 		end
 	end
@@ -762,8 +766,8 @@ function SetAirManuStateForVeh(veh, newstate)
 				else
 					PlaySoundFromEntity(snd_airmanu[veh], "SIRENS_AIRHORN", veh, 0, 0, 0)
 				end
-			else
-				PlaySoundFromEntity(snd_airmanu[veh], siren_string_lookup[newstate-1], veh, 0, 0, 0)				
+			elseif newstate ~= 0 then
+				PlaySoundFromEntity(snd_airmanu[veh], siren_string_lookup[newstate-1], veh, 0, 0, 0)
 			end
 			state_airmanu[veh] = newstate
 		end
